@@ -1,0 +1,2 @@
+FROM ghcr.io/dain1022/guestbook:v1
+ENV APP_TITLE="다인이 깃허브에서 가져온  오지 방명록" \ THEME_COLOR="7C9A82"
