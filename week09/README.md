@@ -60,12 +60,6 @@ minikube에 guestbook 이미지를 배포하는 실습 중에 Pod가 `ErrImagePu
    ```bash
    kubectl set image deployment/guestbook guestbook=ghcr.io/5ooozi/guestbook:v1
    ```
-2. `kubectl patch`로 `imagePullPolicy`를 `Never`로 바꿈. 외부 pull 없이 minikube 안의 로컬 이미지만 쓰게 함.
-   ```bash
-   kubectl patch deployment guestbook -p '{"spec":{"template":{"spec":{"containers":[{"name":"guestbook","imagePullPolicy":"Never"}]}}}}'
-   ```
-
-<img width="938" height="136" alt="해결 후 화면" src="https://github.com/user-attachments/assets/53add3d8-19b5-4954-b583-e1801cc40ee3" />
 
 ### 💡 배운 점
 - `minikube image load`는 로컬 도커 이미지를 minikube로 복사만 하는 명령임. 디플로이먼트의 이미지 이름과 한 글자라도 다르면 이미지를 못 찾아서 외부(ghcr)에서 pull을 시도함.
