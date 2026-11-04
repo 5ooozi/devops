@@ -29,7 +29,7 @@
 </head>
 <body>
   <div class="wrap">
-    <h1>{{ title }}</h1>
+    <h1>{{ title }} v2 </h1>
     <div class="meta">
       <span class="badge">저장소: {{ storage }}</span>
       <span class="badge">Pod/Host: {{ hostname }}</span>
@@ -40,7 +40,7 @@
       <form action="/add" method="post">
         <input name="name" placeholder="이름" maxlength="20">
         <textarea name="message" placeholder="한마디 남기기" rows="2" maxlength="200"></textarea>
-        <button type="submit">글  남기기</button>
+        <button type="submit">남기기</button>
       </form>
     </div>
 
@@ -54,7 +54,7 @@
           </div>
         {% endfor %}
       {% else %}
-        <div class="empty">오지의 방명록에 첫 글을 남겨주세요!</div>
+        <div class="empty">아직 방명록이 비어 있습니다.</div>
       {% endif %}
     </div>
   </div>
