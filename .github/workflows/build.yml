@@ -1,0 +1,68 @@
+name: Build and Push Image
+
+on:
+  push: # main 브랜치와 paths 조건을 만족할 때 실행
+    branches: [main]
+    paths: # 앱이 바뀐 경우에만 실행
+      - 'guestbook/**'
+      - '.github/workflows/build.yml'
+  pull_request:
+    branches: [main] # PR 검사
+  workflow_dispatch: # 수동 실행
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository_owner }}/guestbook
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    defaults:
+      run:
+        working-directory: guestbook # run 명령 실행 장소 - guestbook 디렉토리
+    steps:
+      - name: 소스 코드 가져오기
+        uses: actions/checkout@v7
+      - name: Python 준비
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: 코드 검사 (Lint) # 실패하면 다음 단계로 넘어가지 않음
+        run: |
+          pip install ruff
+          ruff check . --select=E9,F
+      - name: 앱 동작 테스트
+        env:
+          REDIS_HOST: '' # 메모리 모드 테스트
+        run: |
+          python -m pip install -r requirements.txt
+          python -m unittest discover -s tests -v
+      - name: QEMU 준비
+        uses: docker/setup-qemu-action@v4
+      - name: Buildx 준비
+        uses: docker/setup-buildx-action@v4
+      - name: ghcr.io 로그인
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: 이미지 태그 결정
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=,format=short
+            type=raw,value=latest,enable={{is_default_branch}}
+      - name: 빌드 & 푸시
+        uses: docker/build-push-action@v7
+        with:
+          context: ./guestbook # 저장소 루트가 아닌, '앱 폴더'를 빌드 재료로 사용
+          push: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          platforms: linux/amd64,linux/arm64
